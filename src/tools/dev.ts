@@ -1,3 +1,6 @@
+import { writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { obsidian, toolError, type ExecOptions } from "../connection.js";
@@ -86,17 +89,54 @@ export function registerDevTools(server: McpServer, opts: ExecOptions) {
   server.registerTool(
     "obsidian_screenshot",
     {
-      description: "Take a screenshot of Obsidian",
+      description: "Take a screenshot of Obsidian. Uses Chrome DevTools Protocol for full-window or element-targeted captures.",
       inputSchema: {
-        path: z.string().optional().describe("Output file path"),
+        path: z.string().optional().describe("Output file path (default: auto-generated in temp dir)"),
+        selector: z.string().optional().describe("CSS selector to screenshot a specific element instead of the full window"),
+        format: z.enum(["png", "jpeg", "webp"]).optional().describe("Image format (default: png)"),
+        quality: z.number().min(1).max(100).optional().describe("Compression quality for jpeg/webp (1-100)"),
       },
       annotations: { readOnlyHint: true },
     },
-    async ({ path }) => {
-      const args = ["dev:screenshot"];
-      if (path) args.push(`path=${path}`);
-      const result = await obsidian(args, opts);
-      return { content: [{ type: "text" as const, text: result || "Screenshot taken" }] };
+    async ({ path, selector, format, quality }) => {
+      try {
+        const fmt = format || "png";
+        const ext = fmt === "jpeg" ? "jpg" : fmt;
+        const outPath = path || join(tmpdir(), `obsidian-screenshot-${Date.now()}.${ext}`);
+
+        // If a selector is provided, resolve its bounding box via eval
+        let clip: { x: number; y: number; width: number; height: number; scale: number } | undefined;
+        if (selector) {
+          const code = [
+            `const els = document.querySelectorAll(${JSON.stringify(selector)});`,
+            "let r = null;",
+            "for (const el of els) { const b = el.getBoundingClientRect(); if (b.width > 0 && b.height > 0) { r = b; break; } }",
+            "r ? JSON.stringify({x:r.x,y:r.y,width:r.width,height:r.height}) : 'null';",
+          ].join(" ");
+          const rectResult = await obsidian(["eval", `code=${code}`], opts);
+          const cleaned = rectResult.trim().replace(/^=>\s*/, "");
+          const rect = JSON.parse(cleaned);
+          if (!rect) return toolError(`Selector "${selector}" not found or not visible`);
+          clip = { ...rect, scale: 1 };
+        }
+
+        // Capture via CDP
+        const captureParams: Record<string, unknown> = { format: fmt };
+        if (quality !== undefined && fmt !== "png") captureParams.quality = quality;
+        if (clip) captureParams.clip = clip;
+
+        const captureResult = await obsidian(
+          ["dev:cdp", "method=Page.captureScreenshot", `params=${JSON.stringify(captureParams)}`],
+          opts
+        );
+        const capture = JSON.parse(captureResult);
+        if (!capture.data) return toolError("Screenshot capture returned no data");
+
+        await writeFile(outPath, Buffer.from(capture.data, "base64"));
+        return { content: [{ type: "text" as const, text: outPath }] };
+      } catch (e) {
+        return toolError(`Screenshot failed: ${e instanceof Error ? e.message : e}`);
+      }
     }
   );
 
