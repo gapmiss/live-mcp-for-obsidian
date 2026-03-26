@@ -1,0 +1,54 @@
+{
+  "name": "live-mcp-for-obsidian",
+  "version": "0.1.0",
+  "description": "A live connection between AI assistants and your running Obsidian instance. Full app automation — not just file access.",
+  "type": "module",
+  "bin": {
+    "live-mcp-for-obsidian": "./build/cli.js"
+  },
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node build/cli.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "yargs": "^17.7.2",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.17",
+    "@types/yargs": "^17.0.33",
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.1"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "mcp",
+    "obsidian",
+    "model-context-protocol",
+    "automation",
+    "claude",
+    "ai",
+    "devtools",
+    "plugins"
+  ],
+  "author": "gapmiss",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gapmiss/live-mcp-for-obsidian.git"
+  },
+  "homepage": "https://github.com/gapmiss/live-mcp-for-obsidian#readme",
+  "bugs": {
+    "url": "https://github.com/gapmiss/live-mcp-for-obsidian/issues"
+  }
+}
