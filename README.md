@@ -19,7 +19,7 @@ This server operates at a fundamentally different level:
 | Search vault              | Yes                    | Yes                                    |
 | Interact with plugins     | No                     | Yes — enable, disable, reload, inspect |
 | Click UI elements         | No                     | Yes — any button, menu, or control     |
-| Take screenshots          | No                     | Yes — full app capture                 |
+| Take screenshots          | No                     | Yes — full window or targeted element  |
 | Execute JavaScript        | No                     | Yes — full `app.*` API access          |
 | Inspect DOM/CSS           | No                     | Yes — like Chrome DevTools             |
 | Mobile emulation          | No                     | Yes — test mobile layouts              |
@@ -133,18 +133,27 @@ The assistant can interact with any UI element via `obsidian_eval` — clicking 
 
 > "Reload my plugin so I can test the changes"
 > "What commands does my plugin register?"
-> "Take a screenshot so I can see how my settings tab looks"
+> "Take a screenshot of `.my-plugin-settings` so I can see how my settings tab looks"
 > "Show me the console errors after I triggered that bug"
 > "What CSS is applied to `.my-plugin-container`?"
 > "Toggle mobile emulation so I can test the mobile layout"
 
 Full Chrome DevTools capabilities — DOM inspection, CSS debugging, console/error capture, screenshots, and arbitrary JS evaluation — plus Obsidian-specific tools like plugin reload and command listing.
 
+### Screenshots
+
+> "Take a screenshot"
+> "Screenshot just the `.workspace-leaf.mod-active` element"
+> "Take a jpeg screenshot at 80% quality"
+> "Screenshot the sidebar: `.workspace-split.mod-left-split`"
+
+`obsidian_screenshot` uses Chrome DevTools Protocol for capture, supporting full-window or element-targeted screenshots via CSS selector. Choose between png, jpeg, or webp output, and control compression quality for jpeg/webp. Element targeting finds the first visible match — useful in Obsidian where multiple hidden duplicates of a selector may exist.
+
 ### Theme development
 
 > "What CSS variables does the current theme define for text colors?"
 > "Inspect the computed styles on the sidebar"
-> "Take a screenshot, then switch to dark mode and take another"
+> "Screenshot the `.workspace-leaf-content`, then switch to dark mode and take another"
 > "Show me the CSS source locations for `.workspace-leaf`"
 
 ### Knowledge base queries
@@ -236,7 +245,7 @@ The `obsidian_command` tool can trigger any registered command, and `obsidian_ev
 | `obsidian_dom`        | Query DOM elements by CSS selector                   |
 | `obsidian_console`    | Show captured console messages                       |
 | `obsidian_errors`     | Show captured errors                                 |
-| `obsidian_screenshot` | Take a screenshot of Obsidian                        |
+| `obsidian_screenshot` | Take a screenshot of the full window or a specific element via CSS selector. Supports png/jpeg/webp output and quality control. |
 | `obsidian_css`        | Inspect CSS with source locations for a selector     |
 | `obsidian_cdp`        | Run a Chrome DevTools Protocol command directly      |
 | `obsidian_debug`      | Attach or detach the CDP debugger                    |
@@ -262,6 +271,9 @@ obsidian_plugin_reload { id: "my-plugin" }
 
 obsidian_dom { selector: ".workspace-leaf", text: true }
   → obsidian dev:dom selector=".workspace-leaf" text
+
+obsidian_screenshot { selector: ".workspace-leaf", format: "jpeg", quality: 80 }
+  → CDP Page.captureScreenshot with element clip region
 ```
 
 No network servers, no ports, no plugins to install. The CLI communicates with the running Obsidian instance directly.
