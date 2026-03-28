@@ -1,0 +1,29 @@
+node_modules/
+build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+*.swp
+*.swo
+.idea/
+.vscode/
+*.sublime-workspace
+
+# Environment
+.env
+.env.*
+
+# AI agents
+.claude/
+.agents/
+CLAUDE.md
+
+# Logs
+*.log
+npm-debug.log*
+
+# test vault
+test-vault/

@@ -1,6 +1,6 @@
 {
   "name": "live-mcp-for-obsidian",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A live connection between AI assistants and your running Obsidian instance. Full app automation — not just file access.",
   "type": "module",
   "bin": {
