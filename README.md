@@ -278,6 +278,58 @@ obsidian_screenshot { selector: ".workspace-leaf", format: "jpeg", quality: 80 }
 
 No network servers, no ports, no plugins to install. The CLI communicates with the running Obsidian instance directly.
 
+## Token usage
+
+Every MCP tool call consumes tokens — the tool description, the input parameters, and the response all count. This server is designed to be lightweight: most responses are raw CLI output with no wrapper text, and write operations return single-word confirmations like "Created" or "Deleted" (1-4 tokens).
+
+### What a typical session looks like
+
+| Action | Tool calls | Typical tokens |
+| --- | --- | --- |
+| Session briefing | 1 (`obsidian_briefing`) | 100-400 |
+| Read a note | 1 (`obsidian_read`) | 50-2,000+ (depends on note length) |
+| Append to daily note | 1 (`obsidian_daily_append`) | ~30 (input + "Appended to daily note") |
+| Take a screenshot | 1 (`obsidian_screenshot`) | ~30 (returns only a file path) |
+| Enable a plugin | 1 (`obsidian_plugin_enable`) | ~20 (returns "Enabled") |
+| List vault files | 1 (`obsidian_files`) | 50-5,000+ (depends on vault size) |
+
+Most interactions are small. A "read my daily note and append a task" flow is ~3 tool calls and a few hundred tokens total. The expensive operations are the ones that return large, unbounded content.
+
+### Tools with large outputs
+
+These tools can return substantial output depending on your vault size and content:
+
+| Tool | What drives size | How to reduce it |
+| --- | --- | --- |
+| `obsidian_files` | Number of files in vault | Use `folder`, `ext` filters, or `total: true` for count only |
+| `obsidian_read` | Length of the note | No built-in limit — large notes return in full |
+| `obsidian_tasks` | Number of tasks vault-wide | Use `file`, `path`, `active`, `daily`, or `done`/`todo` filters |
+| `obsidian_commands` | Number of installed plugins | Use `filter` to match by command ID prefix |
+| `obsidian_dom` | DOM complexity | Avoid `all: true` on broad selectors; use `text: true` for text-only |
+| `obsidian_eval` / `obsidian_cdp` | Whatever your code returns | Design your code to return only what you need |
+| `obsidian_briefing` | CLAUDE.md file size | Keep your vault's CLAUDE.md concise |
+
+### Built-in efficiency features
+
+Several tools include parameters specifically for reducing output:
+
+- **`total: true`** on `obsidian_files`, `obsidian_links`, `obsidian_backlinks` — returns only a count instead of the full list
+- **`format`** on `obsidian_tags`, `obsidian_tasks`, `obsidian_properties`, `obsidian_plugins`, `obsidian_backlinks` — choose `tsv` or `csv` for compact tabular output, `json` for structured data
+- **`filter`** on `obsidian_plugins` (by type), `obsidian_commands` (by ID prefix) — narrow results before they're returned
+- **`done` / `todo`** on `obsidian_tasks` — get only completed or incomplete tasks
+- **`active` / `daily`** on `obsidian_tasks`, `obsidian_tags`, `obsidian_properties` — scope to current file or daily note instead of full vault
+- **`text: true`** on `obsidian_dom` — return text content instead of raw HTML
+- **`limit`** on `obsidian_console` — cap the number of console messages returned
+
+### Tips for keeping token usage low
+
+1. **Start with `obsidian_briefing`** — one call gives you active file, open tabs, daily note status, recent files, and vault stats. Much cheaper than calling each tool separately.
+2. **Use filters on list tools** — `obsidian_files` with `ext=md` and `folder=Projects` is dramatically cheaper than listing the entire vault.
+3. **Prefer `total: true` when you only need a count** — "how many markdown files?" costs ~20 tokens instead of listing thousands of paths.
+4. **Scope tasks and tags to a file** — vault-wide `obsidian_tasks` on a large vault can be expensive; `obsidian_tasks` with `active: true` is not.
+5. **Use `text: true` with `obsidian_dom`** — raw HTML is verbose; text content is usually what you need.
+6. **Keep your vault's CLAUDE.md short** — `obsidian_briefing` includes it in full. A few focused lines is better than a wall of text.
+
 ## FAQ
 
 **Is this safe?** This server runs locally and communicates only via stdio — there's no network exposure. Destructive tools like `obsidian_delete` require confirmation from your MCP client before executing. See [SECURITY.md](SECURITY.md) for the full trust model.
