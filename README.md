@@ -7,7 +7,7 @@ A live connection between AI assistants and your running Obsidian instance.
 
 Most Obsidian MCP servers treat your vault as a folder of files — read, write, search. This one connects to the **live application**. It can read your notes, but it can also click buttons, manage plugins, take screenshots, execute JavaScript, inspect the DOM, emulate mobile, and control the full Obsidian UI. 43 tools, zero plugins required.
 
-## Demos
+## Demo
 
 https://github.com/user-attachments/assets/297fb0d5-f089-45b5-8038-5de2cbc0f4b7
 
@@ -245,18 +245,18 @@ The `obsidian_command` tool can trigger any registered command, and `obsidian_ev
 
 ### Developer Tools
 
-| Tool                  | Description                                          |
-| --------------------- | ---------------------------------------------------- |
-| `obsidian_eval`       | Execute JavaScript in Obsidian and return the result |
-| `obsidian_dom`        | Query DOM elements by CSS selector                   |
-| `obsidian_console`    | Show captured console messages                       |
-| `obsidian_errors`     | Show captured errors                                 |
+| Tool                  | Description                                                                                                                     |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `obsidian_eval`       | Execute JavaScript in Obsidian and return the result                                                                            |
+| `obsidian_dom`        | Query DOM elements by CSS selector                                                                                              |
+| `obsidian_console`    | Show captured console messages                                                                                                  |
+| `obsidian_errors`     | Show captured errors                                                                                                            |
 | `obsidian_screenshot` | Take a screenshot of the full window or a specific element via CSS selector. Supports png/jpeg/webp output and quality control. |
-| `obsidian_css`        | Inspect CSS with source locations for a selector     |
-| `obsidian_cdp`        | Run a Chrome DevTools Protocol command directly      |
-| `obsidian_debug`      | Attach or detach the CDP debugger                    |
-| `obsidian_mobile`     | Toggle mobile emulation on or off                    |
-| `obsidian_devtools`   | Toggle Electron DevTools open/closed                 |
+| `obsidian_css`        | Inspect CSS with source locations for a selector                                                                                |
+| `obsidian_cdp`        | Run a Chrome DevTools Protocol command directly                                                                                 |
+| `obsidian_debug`      | Attach or detach the CDP debugger                                                                                               |
+| `obsidian_mobile`     | Toggle mobile emulation on or off                                                                                               |
+| `obsidian_devtools`   | Toggle Electron DevTools open/closed                                                                                            |
 
 ### Memory
 
@@ -290,14 +290,14 @@ Every MCP tool call consumes tokens — the tool description, the input paramete
 
 ### What a typical session looks like
 
-| Action | Tool calls | Typical tokens |
-| --- | --- | --- |
-| Session briefing | 1 (`obsidian_briefing`) | 100-400 |
-| Read a note | 1 (`obsidian_read`) | 50-2,000+ (depends on note length) |
-| Append to daily note | 1 (`obsidian_daily_append`) | ~30 (input + "Appended to daily note") |
-| Take a screenshot | 1 (`obsidian_screenshot`) | ~30 (returns only a file path) |
-| Enable a plugin | 1 (`obsidian_plugin_enable`) | ~20 (returns "Enabled") |
-| List vault files | 1 (`obsidian_files`) | 50-5,000+ (depends on vault size) |
+| Action               | Tool calls                   | Typical tokens                         |
+| -------------------- | ---------------------------- | -------------------------------------- |
+| Session briefing     | 1 (`obsidian_briefing`)      | 100-400                                |
+| Read a note          | 1 (`obsidian_read`)          | 50-2,000+ (depends on note length)     |
+| Append to daily note | 1 (`obsidian_daily_append`)  | ~30 (input + "Appended to daily note") |
+| Take a screenshot    | 1 (`obsidian_screenshot`)    | ~30 (returns only a file path)         |
+| Enable a plugin      | 1 (`obsidian_plugin_enable`) | ~20 (returns "Enabled")                |
+| List vault files     | 1 (`obsidian_files`)         | 50-5,000+ (depends on vault size)      |
 
 Most interactions are small. A "read my daily note and append a task" flow is ~3 tool calls and a few hundred tokens total. The expensive operations are the ones that return large, unbounded content.
 
@@ -305,15 +305,15 @@ Most interactions are small. A "read my daily note and append a task" flow is ~3
 
 These tools can return substantial output depending on your vault size and content:
 
-| Tool | What drives size | How to reduce it |
-| --- | --- | --- |
-| `obsidian_files` | Number of files in vault | Use `folder`, `ext` filters, or `total: true` for count only |
-| `obsidian_read` | Length of the note | No built-in limit — large notes return in full |
-| `obsidian_tasks` | Number of tasks vault-wide | Use `file`, `path`, `active`, `daily`, or `done`/`todo` filters |
-| `obsidian_commands` | Number of installed plugins | Use `filter` to match by command ID prefix |
-| `obsidian_dom` | DOM complexity | Avoid `all: true` on broad selectors; use `text: true` for text-only |
-| `obsidian_eval` / `obsidian_cdp` | Whatever your code returns | Design your code to return only what you need |
-| `obsidian_briefing` | CLAUDE.md file size | Keep your vault's CLAUDE.md concise |
+| Tool                             | What drives size            | How to reduce it                                                     |
+| -------------------------------- | --------------------------- | -------------------------------------------------------------------- |
+| `obsidian_files`                 | Number of files in vault    | Use `folder`, `ext` filters, or `total: true` for count only         |
+| `obsidian_read`                  | Length of the note          | No built-in limit — large notes return in full                       |
+| `obsidian_tasks`                 | Number of tasks vault-wide  | Use `file`, `path`, `active`, `daily`, or `done`/`todo` filters      |
+| `obsidian_commands`              | Number of installed plugins | Use `filter` to match by command ID prefix                           |
+| `obsidian_dom`                   | DOM complexity              | Avoid `all: true` on broad selectors; use `text: true` for text-only |
+| `obsidian_eval` / `obsidian_cdp` | Whatever your code returns  | Design your code to return only what you need                        |
+| `obsidian_briefing`              | CLAUDE.md file size         | Keep your vault's CLAUDE.md concise                                  |
 
 ### Built-in efficiency features
 
