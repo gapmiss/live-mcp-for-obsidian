@@ -7,11 +7,13 @@ A live connection between AI assistants and your running Obsidian instance.
 
 Most Obsidian MCP servers treat your vault as a folder of files — read, write, search. This one connects to the **live application**. It can read your notes, but it can also click buttons, manage plugins, take screenshots, execute JavaScript, inspect the DOM, emulate mobile, and control the full Obsidian UI. 43 tools, zero plugins required.
 
-## Demo
+## Demos
 
-<video alt="video"><source src="./demo/demo-3.mp4"></video>
+https://github.com/user-attachments/assets/00abd490-d62d-426e-9ed3-604a3d7f8f64
 
-[More demos](./demo/)
+https://github.com/user-attachments/assets/cd1950be-245e-4027-ba15-863c6a0d5239
+
+https://github.com/user-attachments/assets/297fb0d5-f089-45b5-8038-5de2cbc0f4b7
 
 ## How is this different?
 
