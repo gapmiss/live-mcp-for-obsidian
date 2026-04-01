@@ -11,15 +11,7 @@ Most Obsidian MCP servers treat your vault as a folder of files — read, write,
 
 https://github.com/user-attachments/assets/297fb0d5-f089-45b5-8038-5de2cbc0f4b7
 
-<details style="margin-block: 1em;">
-	<summary>More demos</summary>
-	<p>
-    <video alt="video"><source src="https://github.com/user-attachments/assets/00abd490-d62d-426e-9ed3-604a3d7f8f64"></video>
-  </p>
-	<p>
-    <video alt="video"><source src="https://github.com/user-attachments/assets/cd1950be-245e-4027-ba15-863c6a0d5239"></video>
-	</p>
-</details>
+[More demos](./demo.md)
 
 ## How is this different?
 
