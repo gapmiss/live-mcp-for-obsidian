@@ -69,6 +69,10 @@ describe("createServer()", () => {
       "obsidian_devtools",
       // Memory
       "obsidian_briefing",
+      // Recording
+      "obsidian_start_recording",
+      "obsidian_stop_recording",
+      "obsidian_record",
     ];
 
     for (const name of expectedTools) {

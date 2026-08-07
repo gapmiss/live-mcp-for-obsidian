@@ -5,7 +5,7 @@ A live connection between AI assistants and your running Obsidian instance.
 > [!IMPORTANT]
 > **Disclaimer:** This project is not created by, affiliated with, or endorsed by Obsidian or Dynalist Inc. "Obsidian" is a trademark of Dynalist Inc. This project uses Obsidian's native CLI interface for interoperability.
 
-Most Obsidian MCP servers treat your vault as a folder of files — read, write, search. This one connects to the **live application**. It can read your notes, but it can also click buttons, manage plugins, take screenshots, execute JavaScript, inspect the DOM, emulate mobile, and control the full Obsidian UI. 43 tools, zero plugins required.
+Most Obsidian MCP servers treat your vault as a folder of files — read, write, search. This one connects to the **live application**. It can read your notes, but it can also click buttons, manage plugins, take screenshots, execute JavaScript, inspect the DOM, emulate mobile, record video of the UI, and control the full Obsidian UI. 46 tools, zero plugins required.
 
 ## Demo
 
@@ -43,6 +43,7 @@ With SSH access to the machine running Obsidian, you get full remote control —
 - **Obsidian 1.12.4+** (with CLI support)
 - **Node.js 18+**
 - **macOS** (Linux/Windows: adjust the Obsidian binary path)
+- **ffmpeg** — only for the three screen recording tools. Everything else works without it. Install with `brew install ffmpeg`.
 
 ## Install
 
@@ -263,6 +264,22 @@ The `obsidian_command` tool can trigger any registered command, and `obsidian_ev
 | Tool                | Description                                                                                    |
 | ------------------- | ---------------------------------------------------------------------------------------------- |
 | `obsidian_briefing` | Snapshot of current state: active file, tabs, daily note, recent files, vault stats, CLAUDE.md |
+
+### Screen Recording
+
+Records video of the Obsidian window by capturing frames over the Chrome DevTools Protocol, then encoding them with ffmpeg. Requires `ffmpeg` on your `PATH`.
+
+| Tool                       | Description                                                                                     |
+| -------------------------- | ----------------------------------------------------------------------------------------------- |
+| `obsidian_record`          | Record for a fixed duration (1-120 seconds) and encode. One call, blocks until finished.        |
+| `obsidian_start_recording` | Begin an open-ended recording. Returns a session ID.                                            |
+| `obsidian_stop_recording`  | Stop a session by ID and encode the captured frames. Returns the output file path.              |
+
+Both paths accept `fps` (1-15, default 5) and `format` (`mp4`, `webm`, or `gif`, default `mp4`). Use `obsidian_record` when you know the length in advance; use the start/stop pair when the recording needs to span other tool calls, such as capturing a UI action while you drive it.
+
+`obsidian_record` blocks for the full duration you request. If your MCP client has a request timeout shorter than that, a long recording will appear to fail even though it completes. Use `obsidian_start_recording` and `obsidian_stop_recording` instead for anything long.
+
+Frames that fail to capture are skipped rather than aborting the recording, so a busy or unresponsive Obsidian window produces a shorter video rather than an error. Both stop paths return an error if zero frames were captured.
 
 ## How It Works
 

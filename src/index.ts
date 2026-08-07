@@ -8,6 +8,7 @@ import { registerThemeTools } from "./tools/theme.js";
 import { registerNoteTools } from "./tools/notes.js";
 import { registerDevTools } from "./tools/dev.js";
 import { registerMemoryTools } from "./tools/memory.js";
+import { registerRecordingTools } from "./tools/recording.js";
 
 export function createServer(opts: ExecOptions = {}): McpServer {
   const server = new McpServer({
@@ -23,6 +24,7 @@ export function createServer(opts: ExecOptions = {}): McpServer {
   registerNoteTools(server, opts);
   registerDevTools(server, opts);
   registerMemoryTools(server, opts);
+  registerRecordingTools(server, opts);
 
   return server;
 }
