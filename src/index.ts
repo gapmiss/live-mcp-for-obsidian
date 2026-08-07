@@ -13,7 +13,7 @@ import { registerRecordingTools } from "./tools/recording.js";
 export function createServer(opts: ExecOptions = {}): McpServer {
   const server = new McpServer({
     name: "live-mcp-for-obsidian",
-    version: "0.1.0",
+    version: "0.3.0",
   });
 
   registerStatusTools(server, opts);
