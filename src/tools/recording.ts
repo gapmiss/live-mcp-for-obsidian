@@ -56,7 +56,7 @@ export function registerRecordingTools(server: McpServer, opts: ExecOptions) {
     async ({ fps: fpsArg }) => {
       const fps = fpsArg ?? 5;
       const sessionId = `rec-${Date.now()}`;
-      const framesDir = join(tmpdir(), `storycast-${sessionId}`);
+      const framesDir = join(tmpdir(), `obsidian-recording-${sessionId}`);
       await mkdir(framesDir, { recursive: true });
 
       const session: Session = {
@@ -181,7 +181,7 @@ export function registerRecordingTools(server: McpServer, opts: ExecOptions) {
       const fps = fpsArg ?? 5;
       const format = fmt ?? "mp4";
       const outputPath = resolve(output ?? `recording.${format}`);
-      const framesDir = join(tmpdir(), `storycast-${Date.now()}`);
+      const framesDir = join(tmpdir(), `obsidian-recording-${Date.now()}`);
       await mkdir(framesDir, { recursive: true });
 
       const session: Session = {

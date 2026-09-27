@@ -79,11 +79,12 @@ When writing content, use `\n` for a new line and `\t` for a tab.
 
 > "What's in my Projects folder?"
 > "Read my 'Roadmap' note"
-> "Find notes with 'invoice' in the name"
+> "Find notes that mention invoices"
+> "Show me the lines in Projects/ that mention the deadline"
 
 `obsidian_files` lists files and can filter by `folder` or `ext`. `obsidian_read` returns a note's full text.
 
-`obsidian_search` matches the **file name or path** of markdown notes. It's case-sensitive and does not search inside notes. To find text inside notes, ask the assistant to use `obsidian_eval` or read the likely candidates.
+`obsidian_search` searches inside your notes, using Obsidian's own search. It ignores case unless you pass `case: true`. By default it returns the paths of matching notes. With `context: true` it returns each matching line with its line number, so the assistant often doesn't need to open the note at all. Use `path` to stay inside one folder and `limit` to cap the number of files.
 
 ### Writing
 
@@ -238,6 +239,7 @@ A few tools can return a lot, depending on your vault:
 | `obsidian_read`     | Length of the note     | Nothing built in. Long notes come back in full.            |
 | `obsidian_tasks`    | Tasks across the vault | Use `file`, `path`, `active`, `daily`, `todo`, or `done`   |
 | `obsidian_commands` | Installed plugins      | Use `filter` with a command ID prefix                      |
+| `obsidian_search`   | Common search terms    | Use `path`, `limit`, or `total: true`. `context: true` returns more text. |
 | `obsidian_dom`      | Size of the page       | Use `text: true`, and avoid `all: true` on broad selectors |
 | `obsidian_eval`, `obsidian_cdp` | Whatever the code returns | Return only what you need                   |
 | `obsidian_briefing` | Your vault CLAUDE.md   | Keep CLAUDE.md short                                       |
@@ -291,8 +293,8 @@ Install ffmpeg and make sure your MCP client can see it on its `PATH`. Apps laun
 **"No frames captured. Is Obsidian running?"**
 Every frame failed. Check that Obsidian is open and responsive.
 
-**Search finds nothing**
-`obsidian_search` only matches file names and paths, and it's case-sensitive. See [Reading and finding](#reading-and-finding).
+**A tool says a file, plugin, or command was "not found"**
+Check the spelling. Plugin and command tools want IDs, not display names. `obsidian_plugins` and `obsidian_commands` list them.
 
 **Daily note tools don't work**
 Turn on the Daily notes core plugin in Obsidian's settings.
@@ -327,7 +329,7 @@ Parameters marked with `*` are required. Unless noted, `file` and `path` are opt
 | `obsidian_prepend` | Add text to the start                     | `file`, `path`, `content`*, `inline`                         |
 | `obsidian_delete`  | Move to trash, or delete for good         | `file`, `path`, `permanent`                                  |
 | `obsidian_move`    | Move or rename                            | `file`, `path`, `to`*                                        |
-| `obsidian_search`  | Find notes by name or path (case-sensitive) | `query`*                                                   |
+| `obsidian_search`  | Search inside notes                       | `query`*, `path`, `limit`, `case`, `context`, `total`, `format` (text/json) |
 
 ### Notes and metadata
 

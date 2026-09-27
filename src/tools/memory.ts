@@ -71,10 +71,8 @@ export function registerMemoryTools(server: McpServer, opts: ExecOptions) {
 
       // CLAUDE.md instructions (user-maintained persistent preferences)
       try {
-        const claude = await obsidian(["read", "path=CLAUDE.md"], opts);
-        if (claude.trim() && !claude.includes("not found")) {
-          sections.push(`## CLAUDE.md\n${claude.trim()}`);
-        }
+        const claude = (await obsidian(["read", "path=CLAUDE.md"], opts)).trim();
+        if (claude) sections.push(`## CLAUDE.md\n${claude}`);
       } catch {
         // No CLAUDE.md — that's fine
       }

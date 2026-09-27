@@ -95,6 +95,37 @@ describe("obsidian()", () => {
     await expect(obsidian(["read"])).rejects.toThrow("something went wrong");
   });
 
+  it("rejects when the CLI exits 0 but prints an Error line", async () => {
+    mockExecFile.mockImplementation((_bin, _args, _opts, cb: any) => {
+      cb(null, 'Error: File "missing.md" not found.\n', "");
+      return {} as any;
+    });
+
+    await expect(obsidian(["read", "path=missing.md"])).rejects.toThrow(
+      /^File "missing\.md" not found\.$/
+    );
+  });
+
+  it("resolves multi-line output that starts with Error:", async () => {
+    mockExecFile.mockImplementation((_bin, _args, _opts, cb: any) => {
+      cb(null, "Error: this is a note\nwith more lines", "");
+      return {} as any;
+    });
+
+    await expect(obsidian(["read", "path=log.md"])).resolves.toBe(
+      "Error: this is a note\nwith more lines"
+    );
+  });
+
+  it("resolves eval results that contain Error:", async () => {
+    mockExecFile.mockImplementation((_bin, _args, _opts, cb: any) => {
+      cb(null, "=> Error: fake", "");
+      return {} as any;
+    });
+
+    await expect(obsidian(["eval", "code='Error: fake'"])).resolves.toBe("=> Error: fake");
+  });
+
   it("reports timeout with descriptive message", async () => {
     mockExecFile.mockImplementation((_bin, _args, _opts, cb: any) => {
       const error = new Error("TIMEOUT") as Error & { killed: boolean };

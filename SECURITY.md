@@ -41,7 +41,7 @@ Moves files to the system trash by default. It only deletes permanently if `perm
 ## Input handling
 
 - **No shell injection.** Every call to the Obsidian CLI and to ffmpeg uses Node's `execFile()`, which doesn't go through a shell. An argument like `content=foo; rm -rf /` is passed as plain text.
-- **Generated JavaScript is escaped.** `obsidian_search`, `obsidian_screenshot`, and `obsidian_briefing` build small JavaScript snippets. Any user input in them (the search query, the CSS selector) is escaped with `JSON.stringify()` so it stays a string.
+- **Generated JavaScript is escaped.** `obsidian_tabs`, `obsidian_screenshot`, and `obsidian_briefing` build small JavaScript snippets. The only user input in them, the screenshot CSS selector, is escaped with `JSON.stringify()` so it stays a string.
 - **Paths are handled by Obsidian.** Note paths go straight to the Obsidian CLI, which resolves them inside the vault. The server itself only writes files in two cases: screenshots and recordings, saved to the path you give or a default location.
 
 ## Timeouts

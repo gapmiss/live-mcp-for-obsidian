@@ -170,18 +170,28 @@ export function registerVaultTools(server: McpServer, opts: ExecOptions) {
   server.registerTool(
     "obsidian_search",
     {
-      description: "Find markdown files whose name or path contains the query (case-sensitive). Does not search note contents.",
+      description: "Search note contents for text. Returns matching file paths, or matching lines with context: true.",
       inputSchema: {
-        query: z.string().describe("Search query"),
+        query: z.string().describe("Text to search for"),
+        path: z.string().optional().describe("Limit to a folder"),
+        limit: z.number().optional().describe("Max files to return"),
+        case: z.boolean().optional().describe("Case-sensitive match (default: case-insensitive)"),
+        context: z.boolean().optional().describe("Return each matching line with its line number"),
+        total: z.boolean().optional().describe("Return only the match count (ignored with context)"),
+        format: z.enum(["text", "json"]).optional().describe("Output format"),
       },
       annotations: { readOnlyHint: true },
     },
-    async ({ query }) => {
+    async ({ query, path, limit, case: caseSensitive, context, total, format }) => {
       try {
-        const safe = JSON.stringify(query);
-        const code = `((q) => app.vault.getMarkdownFiles().filter(f => f.path.includes(q) || f.basename.includes(q)).map(f => f.path).join('\\n'))(${safe})`;
-        const result = await obsidian(["eval", `code=${code}`], opts);
-        return { content: [{ type: "text" as const, text: result || "No results" }] };
+        const args = [context ? "search:context" : "search", `query=${query}`];
+        if (path) args.push(`path=${path}`);
+        if (limit) args.push(`limit=${limit}`);
+        if (caseSensitive) args.push("case");
+        if (total && !context) args.push("total");
+        if (format) args.push(`format=${format}`);
+        const result = await obsidian(args, opts);
+        return { content: [{ type: "text" as const, text: result || "No matches found." }] };
       } catch (e) {
         return toolError(`Search failed: ${e instanceof Error ? e.message : e}`);
       }

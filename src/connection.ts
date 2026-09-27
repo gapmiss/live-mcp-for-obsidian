@@ -23,11 +23,24 @@ export async function obsidian(
         } else {
           reject(new Error(msg));
         }
+      } else if (isCliError(stdout)) {
+        reject(new Error(stdout.trim().slice("Error: ".length)));
       } else {
         resolve(stdout);
       }
     });
   });
+}
+
+/**
+ * The Obsidian CLI exits 0 even when a command fails, printing a single
+ * `Error: ...` line to stdout instead. Eval results are prefixed with `=> `,
+ * so they never match. The only false positive is a note whose entire
+ * content is one line starting with "Error: ".
+ */
+export function isCliError(stdout: string): boolean {
+  const text = stdout.trim();
+  return text.startsWith("Error: ") && !text.includes("\n");
 }
 
 /** Return a structured MCP tool error. */
