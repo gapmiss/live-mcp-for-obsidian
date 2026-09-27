@@ -4,7 +4,7 @@
   "description": "A live connection between AI assistants and your running Obsidian instance. Full app automation, not just file access.",
   "type": "module",
   "bin": {
-    "live-mcp-for-obsidian": "./build/cli.js"
+    "live-mcp-for-obsidian": "build/cli.js"
   },
   "files": [
     "build"
