@@ -2,53 +2,54 @@
 
 ## Trust model
 
-This MCP server acts as a bridge between an AI assistant (the MCP client) and a running Obsidian instance. The trust chain is:
+This server sits between your AI assistant and your running Obsidian app:
 
 ```
-User → MCP Client (Claude Code / Claude Desktop) → This Server → Obsidian CLI → Obsidian App
+You → MCP client (Claude Code, Claude Desktop) → this server → Obsidian CLI → Obsidian
 ```
 
-**The MCP client is the trust boundary.** This server does not authenticate callers — it trusts that the MCP client only sends requests the user has approved. All tool calls from the MCP client are executed against the Obsidian CLI without additional authorization.
+**Your MCP client is the gatekeeper.** The server doesn't authenticate anyone. It runs whatever tool calls the client sends. That means:
 
-This means:
-- The server should only be registered with MCP clients you trust
-- Tool calls are gated by the MCP client's permission system (e.g. Claude Code prompts for approval on destructive actions)
-- There is no network listener — the server communicates exclusively via stdio
+- Only register it with MCP clients you trust.
+- Your client's permission prompts are what stand between a request and your vault. Claude Code and Claude Desktop show each tool call and its arguments before running it.
+- There's no network listener. The server only talks over stdio to the process that started it.
+
+Tools are tagged with MCP hints. Read-only tools are marked `readOnlyHint`, and `obsidian_delete` and `obsidian_move` are marked `destructiveHint`. Clients can use these hints to decide when to ask, but it's up to each client whether it does.
 
 ## Powerful tools
 
-Several tools provide capabilities that go beyond reading and writing notes. These are intentional and necessary for the server's purpose (full app automation), but users should understand their scope.
+A few tools go well beyond reading and writing notes. They're there on purpose, because full app automation needs them. Here's what each one can do.
 
 ### `obsidian_eval`
 
-Executes arbitrary JavaScript in Obsidian's main process. This has full access to Obsidian's `app.*` API, the DOM, and Node.js built-ins available in Electron's renderer process. There are no restrictions on what code can be executed.
+Runs any JavaScript in Obsidian's app window. That code has full access to Obsidian's `app` API, the DOM, and whatever Node.js APIs Electron exposes there. Nothing restricts what it can do. It can read, change, or delete any file Obsidian can reach.
 
-**Why it exists:** Many automation tasks require access to Obsidian's internal APIs that aren't exposed through dedicated CLI commands. This is the escape hatch for anything not covered by the other 42 tools.
+**Why it exists:** The other 45 tools can't cover everything. Eval handles the rest, including clicking around the UI.
 
-**Mitigation:** The MCP client controls what code is sent. Claude Code and Claude Desktop present tool calls to the user for approval before execution.
+**What to do:** Read the `code` argument before approving it.
 
 ### `obsidian_cdp`
 
-Sends raw Chrome DevTools Protocol commands to Obsidian's Electron window. This can inspect and manipulate the renderer process at a low level.
+Sends raw Chrome DevTools Protocol commands to Obsidian's window. It can inspect and change the page at a low level.
 
-**Why it exists:** Enables advanced debugging, performance profiling, and DOM manipulation for plugin and theme development.
+**Why it exists:** Advanced debugging and profiling for plugin and theme developers. Screenshots and recordings use CDP internally too.
 
 ### `obsidian_delete`
 
-Moves files to the system trash by default. The `permanent` flag must be explicitly set to `true` to bypass trash. The tool is annotated with `destructiveHint: true`, which MCP clients use to require user confirmation.
+Moves files to the system trash by default. It only deletes permanently if `permanent: true` is passed explicitly.
 
 ## Input handling
 
-- **No shell injection risk.** All CLI calls use Node.js `execFile()`, which passes arguments directly to the process without a shell. Arguments like `content=foo; rm -rf /` are treated as literal strings.
+- **No shell injection.** Every call to the Obsidian CLI and to ffmpeg uses Node's `execFile()`, which doesn't go through a shell. An argument like `content=foo; rm -rf /` is passed as plain text.
+- **Generated JavaScript is escaped.** `obsidian_search`, `obsidian_screenshot`, and `obsidian_briefing` build small JavaScript snippets. Any user input in them (the search query, the CSS selector) is escaped with `JSON.stringify()` so it stays a string.
+- **Paths are handled by Obsidian.** Note paths go straight to the Obsidian CLI, which resolves them inside the vault. The server itself only writes files in two cases: screenshots and recordings, saved to the path you give or a default location.
 
-- **JavaScript injection in `obsidian_search` is mitigated.** The search tool constructs JavaScript code that runs via `obsidian_eval`. User input is escaped using `JSON.stringify()` to prevent injection through the query parameter.
+## Timeouts
 
-- **Path handling is delegated to the CLI.** File paths are passed directly to the Obsidian CLI, which resolves them within the vault. This server does not perform file system operations directly.
+Each call to the Obsidian CLI times out after 10 seconds, so a hung Obsidian can't block your client forever.
 
-## Timeout
+Recording is the exception. `obsidian_record` intentionally runs for up to 120 seconds, and ffmpeg encoding has no timeout.
 
-All CLI calls have a 10-second timeout. If the Obsidian binary does not respond within 10 seconds, the call is killed and an error is returned. This prevents hung processes from blocking the MCP client.
+## Reporting a vulnerability
 
-## Reporting vulnerabilities
-
-If you discover a security issue, please open an issue on the GitHub repository or contact the maintainer directly.
+Please open an issue on the [GitHub repository](https://github.com/gapmiss/live-mcp-for-obsidian/issues) or contact the maintainer directly.

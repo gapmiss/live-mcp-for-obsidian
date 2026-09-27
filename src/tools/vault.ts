@@ -170,7 +170,7 @@ export function registerVaultTools(server: McpServer, opts: ExecOptions) {
   server.registerTool(
     "obsidian_search",
     {
-      description: "Search files, tags, properties, or links in the vault",
+      description: "Find markdown files whose name or path contains the query (case-sensitive). Does not search note contents.",
       inputSchema: {
         query: z.string().describe("Search query"),
       },
